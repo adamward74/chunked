@@ -147,6 +147,25 @@ exports.handler = async (event) => {
         return res(201, task);
       }
 
+      case "PATCH /tasks/{taskId}": {
+        if (!body.name) return res(400, { error: "name is required" });
+        const taskResult = await dynamo.send(
+          new GetCommand({ TableName: TASKS_TABLE, Key: { taskId: params.taskId } })
+        );
+        if (!taskResult.Item) return res(404, { error: "Task not found" });
+        const task = taskResult.Item;
+        await dynamo.send(
+          new UpdateCommand({
+            TableName: TASKS_TABLE,
+            Key: { taskId: params.taskId },
+            UpdateExpression: "SET #n = :name",
+            ExpressionAttributeNames: { "#n": "name" },
+            ExpressionAttributeValues: { ":name": body.name },
+          })
+        );
+        return res(200, { ...task, name: body.name });
+      }
+
       case "DELETE /tasks/{taskId}": {
         await dynamo.send(
           new DeleteCommand({
@@ -155,6 +174,53 @@ exports.handler = async (event) => {
           })
         );
         return res(200, { message: "Task deleted" });
+      }
+
+      case "POST /tasks/{taskId}/chunks": {
+        if (!body.title) return res(400, { error: "title is required" });
+        const taskResult = await dynamo.send(
+          new GetCommand({ TableName: TASKS_TABLE, Key: { taskId: params.taskId } })
+        );
+        if (!taskResult.Item) return res(404, { error: "Task not found" });
+        const task = taskResult.Item;
+        const chunks = task.chunks || [];
+        const maxOrder = chunks.reduce((max, c) => Math.max(max, c.order || 0), 0);
+        const newChunk = {
+          chunkId: uuidv4(),
+          order: maxOrder + 1,
+          title: body.title,
+          description: body.description || "",
+          completed: false,
+        };
+        const updatedChunks = [...chunks, newChunk];
+        await dynamo.send(
+          new UpdateCommand({
+            TableName: TASKS_TABLE,
+            Key: { taskId: params.taskId },
+            UpdateExpression: "SET chunks = :chunks",
+            ExpressionAttributeValues: { ":chunks": updatedChunks },
+          })
+        );
+        return res(200, { ...task, chunks: updatedChunks });
+      }
+
+      case "DELETE /tasks/{taskId}/chunks/{chunkId}": {
+        const taskResult = await dynamo.send(
+          new GetCommand({ TableName: TASKS_TABLE, Key: { taskId: params.taskId } })
+        );
+        if (!taskResult.Item) return res(404, { error: "Task not found" });
+        const task = taskResult.Item;
+        const filtered = (task.chunks || []).filter((c) => c.chunkId !== params.chunkId);
+        const renumbered = filtered.map((c, i) => ({ ...c, order: i + 1 }));
+        await dynamo.send(
+          new UpdateCommand({
+            TableName: TASKS_TABLE,
+            Key: { taskId: params.taskId },
+            UpdateExpression: "SET chunks = :chunks",
+            ExpressionAttributeValues: { ":chunks": renumbered },
+          })
+        );
+        return res(200, { ...task, chunks: renumbered });
       }
 
       // ── AI Breakdown ────────────────────────────────────────────
@@ -240,9 +306,7 @@ Aim for 2–6 chunks depending on the complexity of the task.`;
         const task = taskResult.Item;
 
         const updatedChunks = (task.chunks || []).map((c) =>
-          c.chunkId === params.chunkId
-            ? { ...c, completed: body.completed }
-            : c
+          c.chunkId === params.chunkId ? { ...c, ...body } : c
         );
 
         await dynamo.send(

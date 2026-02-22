@@ -38,3 +38,15 @@ export const toggleChunk = (taskId, chunkId, completed) =>
     `${BASE}/tasks/${taskId}/chunks/${chunkId}`,
     json("PATCH", { completed })
   ).then(handle);
+
+export const updateTask = (taskId, name) =>
+  fetch(`${BASE}/tasks/${taskId}`, json("PATCH", { name })).then(handle);
+
+export const addChunk = (taskId, title, description) =>
+  fetch(`${BASE}/tasks/${taskId}/chunks`, json("POST", { title, description })).then(handle);
+
+export const updateChunk = (taskId, chunkId, updates) =>
+  fetch(`${BASE}/tasks/${taskId}/chunks/${chunkId}`, json("PATCH", updates)).then(handle);
+
+export const deleteChunk = (taskId, chunkId) =>
+  fetch(`${BASE}/tasks/${taskId}/chunks/${chunkId}`, { method: "DELETE" }).then(handle);

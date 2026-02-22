@@ -360,6 +360,109 @@ body {
   min-width: 20px;
 }
 
+/* ── Task name inline edit ────────────────────────────── */
+
+.task-name-input {
+  flex: 1;
+  padding: 3px 8px;
+  border: 1px solid var(--blue);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  font-family: inherit;
+  color: var(--gray-800);
+  outline: none;
+  min-width: 0;
+}
+
+/* ── Icon buttons ─────────────────────────────────────── */
+
+.btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  line-height: 1;
+  color: var(--gray-400);
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.btn-icon:hover { background: var(--gray-100); color: var(--gray-800); }
+.btn-icon-confirm:hover { background: var(--green-light); color: var(--green); }
+.btn-icon-cancel:hover, .btn-icon-delete:hover { background: var(--red-light); color: var(--red); }
+.btn-icon-edit:hover { background: var(--blue-light); color: var(--blue); }
+
+/* ── Chunk actions (hover reveal) ────────────────────── */
+
+.chunk-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+.chunk-item:hover .chunk-actions { opacity: 1; }
+
+/* ── Chunk edit form ──────────────────────────────────── */
+
+.chunk-edit-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.chunk-edit-title {
+  padding: 5px 8px;
+  border: 1px solid var(--blue);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--gray-800);
+  outline: none;
+}
+
+.chunk-edit-desc {
+  padding: 5px 8px;
+  border: 1px solid var(--gray-200);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-family: inherit;
+  color: var(--gray-600);
+  resize: vertical;
+  outline: none;
+}
+.chunk-edit-desc:focus { border-color: var(--blue); }
+
+.chunk-edit-actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* ── Add chunk form ───────────────────────────────────── */
+
+.add-chunk-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px dashed #93c5fd;
+  background: var(--blue-light);
+}
+
+/* ── Chunk list footer ────────────────────────────────── */
+
+.chunk-list-footer {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
 /* ── Loading spinner ──────────────────────────────────── */
 
 .spinner {
@@ -456,4 +559,5 @@ body {
 @media (max-width: 500px) {
   .project-grid { grid-template-columns: 1fr; }
   .modal { padding: 20px 16px; }
+  .chunk-actions { opacity: 1; }
 }
