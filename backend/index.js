@@ -27,7 +27,7 @@ const MODEL_ID =
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "Content-Type",
-  "Access-Control-Allow-Methods": "GET,POST,PATCH,DELETE,OPTIONS",
+  "Access-Control-Allow-Methods": "GET,POST,PATCH,PUT,DELETE,OPTIONS",
   "Content-Type": "application/json",
 };
 
@@ -174,6 +174,28 @@ exports.handler = async (event) => {
           })
         );
         return res(200, { message: "Task deleted" });
+      }
+
+      case "PUT /tasks/{taskId}/chunks": {
+        if (!Array.isArray(body.chunkIds)) return res(400, { error: "chunkIds array required" });
+        const taskResult = await dynamo.send(
+          new GetCommand({ TableName: TASKS_TABLE, Key: { taskId: params.taskId } })
+        );
+        if (!taskResult.Item) return res(404, { error: "Task not found" });
+        const task = taskResult.Item;
+        const chunkMap = Object.fromEntries((task.chunks || []).map((c) => [c.chunkId, c]));
+        const reordered = body.chunkIds
+          .filter((id) => chunkMap[id])
+          .map((id, i) => ({ ...chunkMap[id], order: i + 1 }));
+        await dynamo.send(
+          new UpdateCommand({
+            TableName: TASKS_TABLE,
+            Key: { taskId: params.taskId },
+            UpdateExpression: "SET chunks = :chunks",
+            ExpressionAttributeValues: { ":chunks": reordered },
+          })
+        );
+        return res(200, { ...task, chunks: reordered });
       }
 
       case "POST /tasks/{taskId}/chunks": {

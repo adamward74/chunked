@@ -68,7 +68,10 @@ add_method() {
 
 # ── Add new methods ────────────────────────────────────────────────
 add_method "$TASK_ID_RES"  PATCH
+add_method "$TASK_ID_RES"  OPTIONS
 add_method "$CHUNKS_RES"   POST
+add_method "$CHUNKS_RES"   PUT
+add_method "$CHUNKS_RES"   OPTIONS
 add_method "$CHUNK_ID_RES" DELETE
 
 # ── Redeploy ──────────────────────────────────────────────────────
@@ -80,6 +83,9 @@ aws apigateway create-deployment \
 
 echo ""
 echo "✓ Done! New routes added:"
-echo "  PATCH  /tasks/{taskId}"
-echo "  POST   /tasks/{taskId}/chunks"
-echo "  DELETE /tasks/{taskId}/chunks/{chunkId}"
+echo "  PATCH   /tasks/{taskId}"
+echo "  OPTIONS /tasks/{taskId}"
+echo "  POST    /tasks/{taskId}/chunks"
+echo "  PUT     /tasks/{taskId}/chunks"
+echo "  OPTIONS /tasks/{taskId}/chunks"
+echo "  DELETE  /tasks/{taskId}/chunks/{chunkId}"
